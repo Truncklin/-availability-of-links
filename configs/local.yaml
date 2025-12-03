@@ -1,5 +1,5 @@
 env: localhost
-storage_path: /internal/storage
+storage_path: ./data/availability_links.db
 http_server:
   host: localhost:8080
   timeout: 10s

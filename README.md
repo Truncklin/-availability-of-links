@@ -5,8 +5,8 @@ go run ./cmd/webserver --config configs/local.yaml
 - Добавил путь к конфигу так как не удобно будет добавлять путь в окружение.(лишние команды в консоли)
 
 
-### реализация загрузки конфига 
-#### считывания конфига с помощью библиотеки cleanenv
+### Реализация загрузки конфига 
+#### Считывания конфига с помощью библиотеки cleanenv
 ```go func MustLoadConfig(configPath string) (*Config, error) {
 	var cfg Config
 
@@ -17,7 +17,7 @@ go run ./cmd/webserver --config configs/local.yaml
 	return &cfg, nil
 }
 ```
-#### реализация считывания флага при запуске програмы 
+#### Реализация считывания флага при запуске програмы 
 
 ```go func pafseFlags() string {
 	var configPath string
@@ -26,6 +26,8 @@ go run ./cmd/webserver --config configs/local.yaml
 	return configPath
 }
 ```
+
+
 
 
 
