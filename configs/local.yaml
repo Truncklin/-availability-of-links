@@ -1,0 +1,6 @@
+env: localhost
+storage_path: /internal/storage
+http_server:
+  host: localhost:8080
+  timeout: 10s
+  idle_timeout: 60s
