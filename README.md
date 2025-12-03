@@ -3,7 +3,8 @@
 ## ```go run ./cmd/webserver --config configs/local.yaml```
 
 ### реализация загрузки конфига 
-```func MustLoadConfig(configPath string) (*Config, error) {
+#### считывания конфига с помощью библиотеки cleanenv
+```go func MustLoadConfig(configPath string) (*Config, error) {
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
@@ -11,8 +12,17 @@
 		return nil, err
 	}
 	return &cfg, nil
-}```
+}
+```
+#### реализация считывания флага при запуске програмы 
 
+```go func pafseFlags() string {
+	var configPath string
+	pflag.StringVar(&configPath, "config", "configs/local.yaml", "Path to config file")
+	pflag.Parse()
+	return configPath
+}
+```
 
 
 
