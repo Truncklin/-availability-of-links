@@ -21,7 +21,6 @@ func main() {
 	if err := storage.NewStorage(cfg.StoragePath); err != nil {
 		slog.Error("Error initializing storage", slog.Any("error", err))
 	}
-	//TODO: init storage: sqlite
 
 	//TODO: init route: chi, "chi render"
 
@@ -29,8 +28,11 @@ func main() {
 }
 
 func pafseFlags() string {
+
 	var configPath string
+
 	pflag.StringVar(&configPath, "config", "configs/local.yaml", "Path to config file")
 	pflag.Parse()
+
 	return configPath
 }
