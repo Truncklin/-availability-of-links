@@ -14,7 +14,6 @@ func NewStorage(pathDb string) (*sql.DB, error) {
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
-	defer db.Close()
 
 	sqlComand, err := os.ReadFile("./internal/storage/migrations/001_init.sql")
 	if err != nil {

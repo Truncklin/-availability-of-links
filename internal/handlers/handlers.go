@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -45,6 +46,7 @@ func (h *Handler) SubmitLinks(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, map[string]string{"error": "invalid json"})
+		slog.Error("", "err", err)
 		return
 	}
 	if len(req.Links) == 0 {
@@ -57,6 +59,7 @@ func (h *Handler) SubmitLinks(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
 		render.JSON(w, r, map[string]string{"error": "internal"})
+		slog.Error("createIdAndLinks failed", "err", err)
 		return
 	}
 
@@ -90,6 +93,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, map[string]string{"error": "invalid links_list"})
+			slog.Error("", "err", err)
 			return
 		}
 		idNum = append(idNum, v)
@@ -99,6 +103,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
 		render.JSON(w, r, map[string]string{"error": "internal"})
+		slog.Error("gatherLinksForId failed", "err", err)
 		return
 	}
 
@@ -106,6 +111,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
 		render.JSON(w, r, map[string]string{"error": "pdf generation failed"})
+		slog.Error("pdf generation failed", "err", err)
 		return
 	}
 
@@ -121,7 +127,7 @@ func createIdAndLinks(db *sql.DB, links []string) (int64, error) {
 		return 0, err
 	}
 
-	res, err := tx.Exec(`INSERT INTO id DEFAULT VALUES`)
+	res, err := tx.Exec(`INSERT INTO batches DEFAULT VALUES`)
 	if err != nil {
 		tx.Rollback()
 		return 0, err
@@ -134,7 +140,7 @@ func createIdAndLinks(db *sql.DB, links []string) (int64, error) {
 	}
 
 	stmt, err := tx.Prepare(`
-        INSERT INTO links (id, url, status)
+        INSERT INTO links (batch_id, url, status)
         VALUES (?, ?, 'queued')
     `)
 	if err != nil {
