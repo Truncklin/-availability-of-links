@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -106,7 +107,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(q, ",")
 	var idNum []int64
 	for _, p := range parts {
-		if p == "" {
+		if p == " " {
 			continue
 		}
 		v, err := strconv.ParseInt(strings.TrimSpace(p), 10, 64)
@@ -208,7 +209,6 @@ func gatherLinksForId(db *sql.DB, id []int64) (map[string]string, error) {
 		return nil, err
 	}
 	defer rows.Close()
-
 	result := make(map[string]string)
 
 	for rows.Next() {
@@ -218,6 +218,7 @@ func gatherLinksForId(db *sql.DB, id []int64) (map[string]string, error) {
 			return nil, err
 		}
 		result[url] = status
+		log.Printf("%v", result)
 	}
 
 	return result, nil
@@ -233,7 +234,7 @@ func GeneratePDF(data map[string]string) ([]byte, error) {
 	pdf.SetFont("Arial", "", 12)
 
 	for url, status := range data {
-		line := fmt.Sprintf("%s : %s", url, status)
+		line := fmt.Sprintf("%s:%s", url, status)
 		pdf.Cell(0, 8, line)
 		pdf.Ln(8)
 	}
