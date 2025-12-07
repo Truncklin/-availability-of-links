@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/render"
 	"github.com/jung-kurt/gofpdf"
@@ -68,11 +69,30 @@ func (h *Handler) SubmitLinks(w http.ResponseWriter, r *http.Request) {
 		respMap[l] = "queued"
 	}
 
+	results := make(map[string]string)
+	for _, link := range req.Links {
+		status := checkURL(link)
+		results[link] = status
+
+		_, err := h.DB.Exec(`
+            UPDATE links SET status=? WHERE batch_id=? AND url=?
+        `, status, batchID, link)
+		if err != nil {
+			slog.Error("update failed", "err", err)
+		}
+	}
+
+	_, _ = h.DB.Exec(`
+        UPDATE jobs SET status='done', updated_at=CURRENT_TIMESTAMP
+        WHERE batch_id=?
+    `, batchID)
+
 	resp := submitLinksResp{
-		Links:    respMap,
+		Links:    results,
 		LinksNum: batchID,
 	}
-	render.Status(r, http.StatusAccepted)
+
+	render.Status(r, http.StatusOK)
 	render.JSON(w, r, resp)
 }
 
@@ -147,13 +167,21 @@ func createIdAndLinks(db *sql.DB, links []string) (int64, error) {
 		tx.Rollback()
 		return 0, err
 	}
-	defer stmt.Close()
 
 	for _, link := range links {
 		if _, err := stmt.Exec(batchID, link); err != nil {
 			tx.Rollback()
 			return 0, err
 		}
+	}
+
+	_, err = tx.Exec(`
+        INSERT INTO jobs (batch_id, status)
+        VALUES (?, 'processing')
+    `, batchID)
+	if err != nil {
+		tx.Rollback()
+		return 0, err
 	}
 
 	return batchID, tx.Commit()
@@ -205,7 +233,7 @@ func GeneratePDF(data map[string]string) ([]byte, error) {
 	pdf.SetFont("Arial", "", 12)
 
 	for url, status := range data {
-		line := fmt.Sprintf("%s — %s", url, status)
+		line := fmt.Sprintf("%s : %s", url, status)
 		pdf.Cell(0, 8, line)
 		pdf.Ln(8)
 	}
@@ -217,4 +245,17 @@ func GeneratePDF(data map[string]string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func checkURL(url string) string {
+	if !strings.HasPrefix(url, "https://") {
+		url = "https://" + url
+	}
+
+	client := http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil || resp.StatusCode >= 400 {
+		return "not available"
+	}
+	return "available"
 }
