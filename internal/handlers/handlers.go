@@ -36,6 +36,10 @@ type submitLinksResp struct {
 	LinksNum int64             `json:"links_num"`
 }
 
+func Health(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, r, map[string]string{"status": "OK"})
+}
+
 func (h *Handler) SubmitLinks(w http.ResponseWriter, r *http.Request) {
 	var req submitLinksReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
