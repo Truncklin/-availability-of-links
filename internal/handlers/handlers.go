@@ -202,7 +202,7 @@ func gatherLinksForId(db *sql.DB, id []int64) (map[string]string, error) {
 	}
 
 	query := `SELECT url, status
-		FROM links WHERE id IN (` + strings.Join(placeholders, ",") + `)
+		FROM links WHERE batch_id IN (` + strings.Join(placeholders, ",") + `)
 	`
 	rows, err := db.Query(query, args...)
 	if err != nil {
