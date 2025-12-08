@@ -86,6 +86,11 @@ func NewStorage(pathDb string) error {
 ## Обратная свзязь по заданию.
 #### Я бы изменил логику приложения, чтобы у нас был запрос POST на запись ссылок которые необходимо обработать, и метод GET который отдает обработанные ссылки, более масштабируемо и безопасно.
 
+## Тесты в postman
+
+<img width="933" height="619" alt="image" src="https://github.com/user-attachments/assets/f2210788-2ff4-4169-8d74-055e3319b9af" />
+
+<img width="936" height="696" alt="image" src="https://github.com/user-attachments/assets/90fa13b2-6f29-4526-8ac5-2f03bbe0d4fb" />
 
 
 # ДАТА ЗАВЕРЕШНИЯ: 08.12.2025
